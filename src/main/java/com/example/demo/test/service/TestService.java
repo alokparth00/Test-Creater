@@ -5,11 +5,14 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.mapper.ObjMapper;
 import com.example.demo.question.model.Question;
 import com.example.demo.question.repository.QuestionRepository;
 import com.example.demo.test.model.Test;
 import com.example.demo.test.model.TestDetails;
 import com.example.demo.test.repository.TestRepository;
+import com.example.demo.user.model.User;
+import com.example.demo.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,14 +22,17 @@ public class TestService {
 	
 	private final TestRepository testRepository;
 	private final QuestionRepository questionRepository;
+	private final ObjMapper mapper;
+	private final UserRepository userRepository;
 	
-	public void insertTest(TestDetails details) {
+	public void insertTest(TestDetails details,User user) {
 		insertQuestion(details.getQuestions());
-		testRepository.save(Test.builder().category(details.getCategory())
-				.description(details.getDescription()).difficultyLevel(details.getDifficultyLevel())
-				.passingScore(details.getPassingScore())
-				.duration(details.getDuration()).startTime(details.getStartTime())
-				.endTime(details.getEndTime()).questions(details.getQuestions()).build());
+		Test test=mapper.testDetailsToTest(details);
+		testRepository.save(test);
+		Set<Test> tests=user.getTests();
+		tests.add(test);
+		user.setTests(tests);
+		userRepository.save(user);
 	}
 	
 	private void insertQuestion(Set<Question> questions) {
